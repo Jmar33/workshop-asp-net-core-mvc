@@ -9,17 +9,26 @@ namespace SalesWebMvc.Models
     public class Seller
     {
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "{0} is required")]// torna o campo obrigatório
+        [StringLength(60, MinimumLength = 3, ErrorMessage = "{0} size shold between {2} and {1}")] // define qual deve ser o tamanho do campo
         public string Name { get; set; }
 
-        [DataType (DataType.EmailAddress)]
+        [Required(ErrorMessage = "{0} is required")]
+        [EmailAddress(ErrorMessage = "Enter a valid email")]
+        [DataType(DataType.EmailAddress)] // transforma um texto em um link para endereço de email
         public string Email { get; set; }
 
-        [Display(Name = "Birth Date")] //anotation qu serve para dar um apelido ao campo
-        [DataType(DataType.Date)]
+        [Required(ErrorMessage = "{0} is required")]
+        [Display(Name = "Birth Date")] //annotation que serve para dar um apelido ao campo
+        [DataType(DataType.Date)] // transforma o tipo de dados em data
+        [DisplayFormat(DataFormatString = "{0: dd/MM/yyyy}")]
         public DateTime BirthDate { get; set; }
 
+        [Required(ErrorMessage = "{0} is required")]
+        [Range(100.0, 50000.0, ErrorMessage = "{0} must be from {1} to {2}")] // define um intervalo de valores válidos
         [Display(Name = "Base Salary")]
-        [DisplayFormat(DataFormatString = "{0: F2}")]
+        [DisplayFormat(DataFormatString = "{0: F2}")] //mostra o valor com duas casas decimais
         public double BaseSalary { get; set; }
         public Department Department { get; set; }
         public int DepartmentId { get; set; }
