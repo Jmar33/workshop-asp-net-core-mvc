@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -44,13 +45,14 @@ namespace SalesWebMvc.Controllers
         {
             if (id == null)
             {
-                return NotFound(); // Instancia uma resposta padrão
+                //return NotFound(); Instancia uma resposta padrão
+                return RedirectToAction(nameof(Error), new { message = "Id not provide" }); //redireciona para pagina de erro e isntancia um objeto anônimo
             }
 
             var obj = _sellerService.FindById(id.Value);
             if (obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
             return View(obj);
 
@@ -67,13 +69,13 @@ namespace SalesWebMvc.Controllers
         {
             if (id == null)
             {
-                return NotFound(); // Instancia uma resposta padrão
+                return RedirectToAction(nameof(Error), new { message = "Id not provide" });
             }
 
             var obj = _sellerService.FindById(id.Value);
             if (obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
             return View(obj);
         }
@@ -82,14 +84,14 @@ namespace SalesWebMvc.Controllers
         {   // veerifica se houve erro na busaca o que fez com que o id retornado fosse nulo
             if (id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not provide" });
             }
 
             // verifica se o id existe no banco de dados
             var obj = _sellerService.FindById(id.Value);
             if (obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
             // por se tratar de um comando de edição os campos já devem ser carregados preenchidos
@@ -105,21 +107,32 @@ namespace SalesWebMvc.Controllers
         {
             if (id != seller.Id)
             {
-                return BadRequest(); // O id do seller não pode ser diferente do id da requisição
+                return RedirectToAction(nameof(Error), new { message = "Id is mismatch" }); // O id do seller não pode ser diferente do id da requisição
             }
             try
             {
                 _sellerService.Update(seller);
                 return RedirectToAction(nameof(Index));
             }
-            catch (NotFoundException)
+            catch (ApplicationException e)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = e.Message });
             }
-            catch (DbConcurrencyException)
+            //catch (DbConcurrencyException) Como o comportamento é igual tanto para DbConcurrencyException e NotFoundException
+            //{                              podemos usar somente a solução acima com o auxilio do Upcasting
+            //    return BadRequest();
+            //}
+        }
+
+        public IActionResult Error( string message)
+        {
+            ErrorViewModel viewModel = new ErrorViewModel
             {
-                return BadRequest();
-            }
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier //Serve para obter o id da requisição e caso seja nulo recebemos o TraceIdentifier
+            };
+
+            return View(viewModel);
         }
     }
 }
