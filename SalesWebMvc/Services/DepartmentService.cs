@@ -2,7 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace SalesWebMvc.Services
 {
@@ -15,9 +16,13 @@ namespace SalesWebMvc.Services
             _context = context;
         }
 
-        public List<Department> FindAll()
+        // O sufixo Async é uma recomendação do c# para métodos assíncronos
+        // As expressões linq são declaradas mas apenas executadas quando se necessita do valor que ela retorna, no exemplo 
+        // abaixo ocorre quando executamos o método ToListAsync
+        // Quando usamos um método assíncrono como o ToListAsync devemos usar a palavra await
+        public async Task<List<Department>> FindAllAsync()
         {
-            return _context.Department.OrderBy(x => x.Name).ToList();
+            return await _context.Department.OrderBy(x => x.Name).ToListAsync();
         }
     }
 }
